@@ -1150,6 +1150,34 @@
 			coordinate += (this.width() - coordinate + (this._coordinates[newPosition] || 0)) / 2 * multiplier;
 		} else {
 			coordinate = this._coordinates[newPosition] || 0;
+			
+			//Fix to avoid whitespace after last element when using autoWidth
+			var settings = this.settings,
+			    iterator,
+			    reciprocalItemsWidth,
+			    elementWidth;
+			if ((settings.autoWidth || settings.merge) && !settings.loop) {
+			    iterator = this._items.length;
+			    reciprocalItemsWidth = this._items[--iterator].width();
+			    elementWidth = this.$element.width();
+			    while (iterator--) {
+				reciprocalItemsWidth += this._items[iterator].width() + this.settings.margin;
+				if (reciprocalItemsWidth > elementWidth) {
+				    break;
+				}
+			    }
+			    if (position > iterator && position > 0) {
+				var tempPosition = position;
+				reciprocalItemsWidth = 0;
+				while (tempPosition < this._items.length) {
+				    reciprocalItemsWidth += this._items[tempPosition++].width() + this.settings.margin;
+				}
+				var direction = settings.rtl ? -1 : 1;
+				coordinate = coordinate + direction * (elementWidth - reciprocalItemsWidth + this.settings.margin);
+			    }
+			}
+			// Fix to avoid whitespace after last element when using autoWidth
+			
 		}
 
 		coordinate = Math.ceil(coordinate);
